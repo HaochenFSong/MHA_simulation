@@ -1,0 +1,224 @@
+---
+title: "MHA_contextual_simulation"
+format: html
+editor: visual
+---
+
+## Setting up the model:
+
+```{r, message = FALSE}
+library(tidyverse)
+library(brms)
+library(dplyr)
+library(DT)
+```
+
+Code for TS contextual:
+
+```{r}
+simulate_ts <- function(N, effect_size_arm, effect_size_context) {
+  
+  beta_arm <- exp(c(0, effect_size_arm))
+  beta_context <- exp(effect_size_context)
+  intercept <- rnorm(1,-2,1)
+  
+  arm <- rep(NA, N)
+  context <- rbinom(N, 1, 0.5) 
+  # what is a better distribution for this? this would require some population-wise data
+  reward <- rep(NA, N)
+  
+  # Initialize parameters for Beta-Binomial model
+  success <- rep(0, 2)
+  failure <- rep(0, 2)
+  
+  # Thompson Sampling
+  for (n in 1:N) {
+    
+    theta_sample <- rbeta(2, success + 1, failure + 1)
+    
+    logit_p <-  intercept + beta_arm + beta_context * context[n]
+    p <- 1 / (1 + exp(-logit_p))
+    expected_reward <- theta_sample * p
+    
+    # which arm to choose: is this how to choose? I think so but double check
+    arm[n] <- which.max(expected_reward)
+    
+    # generate a reward from the chosen arm
+    p_true <- 1 / (1 + exp(-(intercept + beta_arm[arm[n]] + beta_context * context[n])))
+    reward[n] <- rbinom(1, 1, p_true)
+    
+    # update the success and failure counts
+    if (reward[n] == 1) {
+      success[arm[n]] <- success[arm[n]] + 1
+    } else {
+      failure[arm[n]] <- failure[arm[n]] + 1
+    }
+  }
+  
+  # return the data
+  return(data.frame(context = context, 
+                    arm = arm,
+                    reward = reward))
+}
+
+```
+
+Code for UR sampling:
+
+```{r}
+simulate_ur <- function(N, effect_size_arm, effect_size_context) {
+  
+  beta_arm <- exp(c(0, effect_size_arm))
+  beta_context <- exp(effect_size_context)
+  intercept <- rnorm(1,-2,0.5)
+  
+  arm <- rep(NA, N)
+  context <- rbinom(N, 1, 0.5) 
+  reward <- rep(NA, N)
+  
+  # Uniform Random Sampling
+  for (n in 1:N) {
+    
+    # Choose an arm uniformly at random
+    arm[n] <- sample(c(1, 2), 1)
+    
+    # Generate a reward from the chosen arm
+    p_true <- 1 / (1 + exp(-(intercept + beta_arm[arm[n]] + beta_context * context[n])))
+    reward[n] <- rbinom(1, 1, p_true)
+  }
+  
+  # Return the data
+  return(data.frame(context = context, 
+                    arm = arm,
+                    reward = reward))
+}
+
+
+```
+
+```{r}
+# for replicating many more trials for ts:
+
+simulate_n_ts <- function(n_trials, N, effect_size_arm, effect_size_context) {
+  
+  results <- vector("list", n_trials)
+  for (i in 1:n_trials) {
+    results[[i]] <- simulate_ts(N, effect_size_arm, effect_size_context)
+  }
+  return(results)
+}
+
+# for replicating many more trials for ts:
+
+simulate_n_ur <- function(n_trials, N, effect_size_arm, effect_size_context) {
+  
+  results <- vector("list", n_trials)
+  for (i in 1:n_trials) {
+    results[[i]] <- simulate_ur(N, effect_size_arm, effect_size_context)
+  }
+  return(results)
+}
+```
+
+## Simulation trial:
+
+### EXP 1:
+
+Number of Participant = 100,
+
+Number of trials(N) = 100
+
+Effect size of arm = 0.2 in terms of reward
+
+Effect size of Contextual factor = 0.2 in terms of reward
+
+```{r, echo = FALSE}
+n_trials <- 100
+N <- 100
+effect_size_arm <- 0.2
+effect_size_context <- 0.5
+results <- simulate_n_ts(n_trials, N, effect_size_arm, effect_size_context)
+
+```
+
+For Thompson Sampling
+
+```{r, message= FALSE, echo = FALSE}
+
+# summarized by each trial for TS
+total_rewards_ts <- data.frame(
+  Trial = integer(),
+  Arm = factor(),
+  Context = factor(),
+  Total_Reward = double(),
+  Total_participant = double(),
+  Average_reward = double()
+)
+
+for (i in 1:n_trials) {
+  
+  total_rewards_i <- results[[i]] %>%
+    group_by(arm, context) %>%
+    summarise(Total_Reward = sum(reward),
+              Total_participant = length(reward)) %>%
+    mutate(Average_reward = Total_Reward/Total_participant,
+           Trial = i)
+  total_rewards_ts <- rbind(total_rewards_ts, total_rewards_i)
+}
+
+total_rewards_ts|>
+  group_by(arm,context) |>
+  summarise(Total_Reward_agg = sum(Total_Reward),
+            Total_participant_agg = sum(Total_participant)) |>
+  mutate(Average_reward = Total_Reward_agg/Total_participant_agg)
+```
+
+FOR Uniform Random Sampling
+
+```{r, message= FALSE, echo=FALSE}
+results <- simulate_n_ur(n_trials, N, effect_size_arm, effect_size_context)
+# summarized by each trial for TS
+total_rewards_ur <- data.frame(
+  Trial = integer(),
+  Arm = factor(),
+  Context = factor(),
+  Total_Reward = double(),
+  Total_participant = double(),
+  Average_reward = double()
+)
+
+for (i in 1:n_trials) {
+  
+  total_rewards_i <- results[[i]] %>%
+    group_by(arm, context) %>%
+    summarise(Total_Reward = sum(reward),
+              Total_participant = length(reward)) %>%
+    mutate(Average_reward = Total_Reward/Total_participant,
+           Trial = i)
+  total_rewards_ur <- rbind(total_rewards_ur, total_rewards_i)
+}
+
+total_rewards_ur|>
+  group_by(arm,context) |>
+  summarise(Total_Reward_agg = sum(Total_Reward),
+            Total_participant_agg = sum(Total_participant)) |>
+  mutate(Average_reward = Total_Reward_agg/Total_participant_agg)
+```
+
+```{r}
+rewards_summary <- total_rewards_ts |>
+  mutate(policy = 'TS') |>
+  rbind(total_rewards_ur |> mutate(policy = 'UR')) |>
+  group_by(policy, context) |>summarise(Total_Reward_agg = sum(Total_Reward),
+  Total_participant_agg = sum(Total_participant)) |>
+  mutate(Average_reward = Total_Reward_agg/Total_participant_agg)
+
+rewards_summary
+
+ggplot(rewards_summary, aes(x = context, y = Average_reward, fill = policy)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Average Reward by Policy and Context",
+       x = "Context",
+       y = "Average Reward",
+       fill = "Policy")
+```
