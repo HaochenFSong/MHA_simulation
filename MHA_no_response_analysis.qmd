@@ -1,0 +1,241 @@
+---
+title: "MHA_no_response data analysis"
+format: html
+editor: visual
+---
+
+# Load Packages:
+
+```{r, message= FALSE}
+library(readr)
+library(tidyr)
+library(dplyr)
+library(DT)
+library(arrow)
+library(bayestestR)
+library(gt)
+library(gtsummary)
+library(ggplot2)
+library(stringr)
+library(dplyr)
+library(broom.helpers)
+library(insight)
+library(readxl)
+```
+
+# 1. Long_prompt_motivation:
+
+## Read-in the data:
+
+Let's start with reading in the data each by each：
+
+```{r, warning = FALSE}
+df1 <- read_xlsx(('data_new/Long_Prompt_Motivation_Prototype_2.xlsx'))
+```
+
+## this is for all the data
+
+```{r, warning = FALSE, message= FALSE}
+df1 |>
+  group_by(learner, arm) |>
+  summarise(responded = (sum(!is.na(long_prompt_motivation_prototype_2_longpromptmotivreward)) > 0)) |>
+  tbl_cross(row = "arm", col = "responded", percent = c("row")) 
+
+```
+
+## this is for data that starting from January:
+
+```{r, warning = FALSE, message= FALSE}
+df1 |>
+  group_by(learner, arm) |>
+  mutate(date_arm_assign = as.Date.character(arm_assign_time)) |>
+  filter(date_arm_assign > '2023-01-01') |>
+  summarise(responded = (sum(!is.na(long_prompt_motivation_prototype_2_longpromptmotivreward)) > 0)) |>
+  tbl_cross(row = "arm", col = "responded", percent = c("row")) 
+```
+
+## now group them by people who people who respond 
+# 2. Long_Prompt_Rationale_Prototype 
+
+```{r, warning = FALSE}
+df1 <- read_xlsx(('data_new/Long_Prompt_Rationale_Prototype_2.xlsx'))
+```
+
+## this is for all the data
+```{r, warning = FALSE, message= FALSE}
+df1 |>
+  group_by(learner, arm) |>
+  summarise(responded = (sum(!is.na(long_prompt_rationale_prototype_2_longpromptrationalereward)) > 0)) |>
+  tbl_cross(row = "arm", col = "responded", percent = c("row")) 
+
+```
+## this is for data that starting from January:
+
+```{r, warning = FALSE, message= FALSE}
+df1 |>
+  group_by(learner, arm) |>
+  mutate(date_arm_assign = as.Date.character(arm_assign_time)) |>
+  filter(date_arm_assign > '2023-01-01') |>
+  summarise(responded = (sum(!is.na(long_prompt_rationale_prototype_2_longpromptrationalereward)) > 0)) |>
+  tbl_cross(row = "arm", col = "responded", percent = c("row")) 
+```
+
+
+# 3. Long_Prompt_ReflectionCommit_Prototype
+
+## Read-in the data:
+
+Let's start with reading in the data each by each：
+
+```{r, warning = FALSE}
+df1 <- read_xlsx(('data_new/Long_Prompt_ReflectionCommit_Prototype_2.xlsx'))
+```
+
+## this is for all the data
+
+```{r, warning = FALSE, message= FALSE}
+df1 |>
+  group_by(learner, arm) |>
+  summarise(responded = (sum(!is.na(long_prompt_reflectioncommit_prototype_2_longpromptcommitreward)) > 0)) |>
+  tbl_cross(row = "arm", col = "responded", percent = c("row")) 
+
+```
+
+## this is for data that starting from January:
+
+```{r, warning = FALSE, message= FALSE}
+df1 |>
+  group_by(learner, arm) |>
+  mutate(date_arm_assign = as.Date.character(arm_assign_time)) |>
+  filter(date_arm_assign > '2023-01-01') |>
+  summarise(responded = (sum(!is.na(long_prompt_reflectioncommit_prototype_2_longpromptcommitreward)) > 0)) |>
+  tbl_cross(row = "arm", col = "responded", percent = c("row")) 
+```
+
+
+# 4. Long_prompt_Reminder_Prototype
+
+## Read-in the data:
+
+Let's start with reading in the data each by each：
+
+```{r, warning = FALSE}
+df1 <- read_xlsx(('data_new/Long_prompt_Reminder_Prototype_2.xlsx'))
+```
+
+## this is for all the data
+
+```{r, warning = FALSE, message= FALSE}
+df1 |>
+  group_by(learner, arm) |>
+  summarise(responded = (sum(!is.na(long_prompt_reminder_prototype_2_longpromptreminderreward)) > 0)) |>
+  tbl_cross(row = "arm", col = "responded", percent = c("row")) 
+
+```
+
+## this is for data that starting from January:
+
+```{r, warning = FALSE, message= FALSE}
+df1 |>
+  group_by(learner, arm) |>
+  mutate(date_arm_assign = as.Date.character(arm_assign_time)) |>
+  filter(date_arm_assign > '2023-01-01') |>
+  summarise(responded = (sum(!is.na(long_prompt_reminder_prototype_2_longpromptreminderreward)) > 0)) |>
+  tbl_cross(row = "arm", col = "responded", percent = c("row")) 
+```
+
+
+# 5. MHAwave1ModularRationale
+
+## Read-in the data:
+
+Let's start with reading in the data each by each：
+
+```{r, warning = FALSE}
+df1 <- read_xlsx(('data_new/MHAwave1ModularRationale.xlsx'))
+```
+
+## this is for all the data
+
+```{r, warning = FALSE, message= FALSE}
+df1 |>
+  group_by(learner, arm) |>
+  summarise(responded = (sum(!is.na(MHAwave1ModularMessageReward)) > 0)) |>
+  tbl_cross(row = "arm", col = "responded", percent = c("row")) 
+
+```
+
+## this is for data that starting from January:
+
+```{r, warning = FALSE, message= FALSE}
+df1 |>
+  group_by(learner, arm) |>
+  mutate(date_arm_assign = as.Date.character(arm_assign_time)) |>
+  filter(date_arm_assign > '2023-01-01') |>
+  summarise(responded = (sum(!is.na(MHAwave1ModularMessageReward)) > 0)) |>
+  tbl_cross(row = "arm", col = "responded", percent = c("row")) 
+```
+
+
+# 6. Modular_Interaction_MHA_Prototype
+
+## Read-in the data:
+
+Let's start with reading in the data each by each：
+
+```{r, warning = FALSE}
+df1 <- read_xlsx(('data_new/Modular_Interaction_MHA_Prototype.xlsx'))
+```
+
+## this is for all the data
+
+```{r, warning = FALSE, message= FALSE}
+df1 |>
+  group_by(learner, arm) |>
+  summarise(responded = (sum(!is.na(modular_interaction_mha_prototype_interactionrating)) > 0)) |>
+  tbl_cross(row = "arm", col = "responded", percent = c("row")) 
+
+```
+
+## this is for data that starting from January:
+
+```{r, warning = FALSE, message= FALSE}
+df1 |>
+  group_by(learner, arm) |>
+  mutate(date_arm_assign = as.Date.character(arm_assign_time)) |>
+  filter(date_arm_assign > '2023-01-01') |>
+  summarise(responded = (sum(!is.na(modular_interaction_mha_prototype_interactionrating)) > 0)) |>
+  tbl_cross(row = "arm", col = "responded", percent = c("row")) 
+```
+
+
+# 7.Modular_Link_MHA_Prototype
+
+## Read-in the data:
+
+Let's start with reading in the data each by each：
+
+```{r, warning = FALSE}
+df1 <- read_xlsx('data_new/Modular_Link_MHA_Prototype.xlsx')
+```
+
+## this is for all the data
+
+```{r, warning = FALSE, message= FALSE}
+df1 |>
+  group_by(learner, arm) |>
+  summarise(responded = (sum(!is.na(modular_link_mha_prototype_linkrating)) > 0)) |>
+  tbl_cross(row = "arm", col = "responded", percent = c("row")) 
+
+```
+
+## this is for data that starting from January:
+
+```{r, warning = FALSE, message= FALSE}
+df1 |>
+  group_by(learner, arm) |>
+  mutate(date_arm_assign = as.Date.character(arm_assign_time)) |>
+  filter(date_arm_assign > '2023-01-01') |>
+  summarise(responded = (sum(!is.na(modular_link_mha_prototype_linkrating)) > 0)) |>
+  tbl_cross(row = "arm", col = "responded", percent = c("row")) 
+```
